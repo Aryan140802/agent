@@ -4,10 +4,10 @@ import com.sun.net.httpserver.*;
 
 public class SystemInfoAgent {
     public static void main(String[] args) throws Exception {
-        int port = 8080; // change per server if needed
+        int port = 8080; // change if needed
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/metrics", new MetricsHandler());
-        server.setExecutor(null); // default executor
+        server.setExecutor(null);
         server.start();
         System.out.println("Agent started on port " + port);
     }
