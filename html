@@ -4,30 +4,150 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deployment Tracker</title>
-        <link rel="stylesheet" href="main.css">
-
+    <link rel="stylesheet" href="main.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Deployment Tracker</h1>
-            <div class="input-group">
-                <input type="text" id="ipInput" placeholder="Enter IP Address (e.g., 10.188.25.163)" value="">
-                <button onclick="loadDeployment()">Load Deployment</button>
+            <div class="header-content">
+                <h1>🚀 Deployment Tracker</h1>
+                <p class="subtitle">Monitor and search deployment history across servers</p>
+            </div>
+            
+            <div class="search-section">
+                <div class="input-group">
+                    <div class="search-icon">🔍</div>
+                    <input type="text" id="ipInput" placeholder="Enter Server IP (e.g., 10.188.25.74)" value="" autocomplete="off">
+                    <button onclick="searchDeployments()" class="search-btn">
+                        <span class="btn-text">Search Deployments</span>
+                        <span class="btn-icon">→</span>
+                    </button>
+                </div>
+                <div class="search-hint">
+                    💡 Start typing for suggestions • Press Enter to search
+                </div>
             </div>
         </div>
-
-        <div class="table-container" id="contentArea">
-            <div class="empty-state">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
-                </svg>
-                <h2>No Data Loaded</h2>
-                <p>Enter an IP address and click "Load Deployment" to view deployment data</p>
+        
+        <div class="main-layout">
+            <!-- Recent Deployments Panel (Always Visible) -->
+            <div class="recent-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <h2>📊 Recent Deployments</h2>
+                        <div class="time-badge">Last 24 Hours</div>
+                    </div>
+                    <div class="panel-actions">
+                        <button onclick="rescanServers()" class="refresh-btn" id="refreshBtn">
+                            <span class="refresh-icon">🔄</span>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="recent-stats">
+                    <div class="recent-stat">
+                        <div class="stat-icon">📁</div>
+                        <div class="stat-content">
+                            <div class="value total" id="totalCount">0</div>
+                            <div class="label">Available Servers</div>
+                        </div>
+                    </div>
+                    <div class="recent-stat">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <div class="value success" id="successCount">0</div>
+                            <div class="label">Recent Success</div>
+                        </div>
+                    </div>
+                    <div class="recent-stat">
+                        <div class="stat-icon">❌</div>
+                        <div class="stat-content">
+                            <div class="value failed" id="failedCount">0</div>
+                            <div class="label">Recent Failed</div>
+                        </div>
+                    </div>
+                    <div class="recent-stat">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-content">
+                            <div class="value date" id="todayDate">--</div>
+                            <div class="label">Today</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="recent-content">
+                    <div class="recent-list" id="recentList">
+                        <div class="empty-recent">
+                            <div class="empty-icon">📊</div>
+                            <h3>No Recent Data</h3>
+                            <p>Search for a server IP to view deployment history</p>
+                            <div class="empty-hint">
+                                <p>Available servers will appear here once discovered</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search Results Panel (Hidden until search) -->
+            <div class="results-panel" id="resultsPanel">
+                <div class="results-header">
+                    <button class="back-button" onclick="showRecentPanel()">
+                        <span class="back-icon">←</span>
+                        <span class="back-text">Back to Overview</span>
+                    </button>
+                    <div class="current-server" id="currentServer">
+                        <!-- Server IP will be shown here -->
+                    </div>
+                </div>
+                
+                <div class="table-container" id="contentArea">
+                    <div class="welcome-state">
+                        <div class="welcome-icon">🚀</div>
+                        <h2>Welcome to Deployment Tracker</h2>
+                        <p>Enter a server IP above to view deployment history</p>
+                        <div class="welcome-features">
+                            <div class="feature">
+                                <span class="feature-icon">🔍</span>
+                                <span class="feature-text">Smart search with suggestions</span>
+                            </div>
+                            <div class="feature">
+                                <span class="feature-icon">📊</span>
+                                <span class="feature-text">24-hour deployment overview</span>
+                            </div>
+                            <div class="feature">
+                                <span class="feature-icon">⚡</span>
+                                <span class="feature-text">Fast filtering and sorting</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <span class="footer-icon">📁</span>
+                    <span>Data Source: /EIS/Deployment_Tracker/data/</span>
+                </div>
+                <div class="footer-stats">
+                    <span id="totalServers">0</span> servers available
+                </div>
             </div>
         </div>
     </div>
-<script src="main.js"></script>
 
+    <script src="main.js"></script>
+    
+    <script>
+        // Set today's date
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const options = { month: 'short', day: 'numeric' };
+            document.getElementById('todayDate').textContent = today.toLocaleDateString('en-US', options);
+        });
+    </script>
 </body>
 </html>
